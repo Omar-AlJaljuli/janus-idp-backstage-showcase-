@@ -108,6 +108,16 @@ delete_namespace() {
   fi
 }
 
+configure_namespace_if_nonexistent() {
+  local project=$1
+  if oc get namespace "${project}" >/dev/null 2>&1; then
+    echo "Namespace ${project} already exists!"
+  else
+    oc create namespace "${project}"
+    oc config set-context --current --namespace="${project}"
+  fi
+}
+
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
@@ -195,6 +205,14 @@ apply_yaml_files() {
   sleep 20 # wait for Pipeline Operator/Tekton pipelines to be ready
   oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
   oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+
+  if [[ "${project}" == "showcase-operator-nightly" ]]; then
+    oc apply -f "$dir/resources/rhdh-operator/dynamic_plugins/configmap-dynamic-plugins.yaml" --namespace="${project}"
+  fi
+
+  if [[ "${project}" == "showcase-operator-rbac-nightly" ]]; then
+    oc apply -f "$dir/resources/rhdh-operator/dynamic_plugins/configmap-dynamic-plugins-rbac.yaml" --namespace="${project}"
+  fi
 }
 
 run_tests() {
@@ -244,6 +262,8 @@ check_backstage_running() {
   local url="https://${release_name}-backstage-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   if [[ "$JOB_NAME" == *aks* ]]; then
     local url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  elif [[ "${namespace}" == "showcase-operator-rbac-nightly" || "${namespace}" == "showcase-operator-nightly" ]]; then
+    local url="https://backstage-${release_name}-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   fi
 
   local max_attempts=30
@@ -292,6 +312,39 @@ install_tekton_pipelines() {
   else
     echo "Tekton Pipelines is not installed. Installing..."
     kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+  fi
+}
+
+apply_operator_group_if_nonexistent() {
+  if [[ $(oc get OperatorGroup -n rhdh-operator  2>/dev/null | wc -l) -ge 1 ]]; then 
+    echo "Red Hat Developer Hub operator group is already installed."
+  else
+    echo "Red Hat Developer Hub operator group does not exist. adding..."
+    oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-operator-group.yaml" -n "${namespace}"
+  fi
+}
+
+install_rhdh_operator() {
+  local dir=$1
+  local namespace=$2
+  CSV_NAME="Red Hat Developer Hub Operator"
+
+  if oc get csv -n "${namespace}" | grep -q "${CSV_NAME}"; then
+    echo "Red Hat Developer Hub operator is already installed."
+  elsedeploy_rhexistent "${namespace}"
+    apply_operator_group_if_nonexistent
+    oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-subscription.yaml" -n "${namespace}"
+  fi
+}
+
+deploy_rhdh_operator() {
+  local dir=$1
+  local namespace=$2
+
+  if [[ "${namespace}" == "showcase-operator-rbac-nightly" ]]; then
+    oc apply -f "${dir}/resources/rhdh-operator/deployment/rhdh-start-rbac.yaml" -n "${namespace}"
+  else 
+    oc apply -f "${dir}/resources/rhdh-operator/deployment/rhdh-start.yaml" -n "${namespace}"
   fi
 }
 
@@ -348,6 +401,17 @@ initiate_rbac_aks_deployment() {
   yq_merge_value_files "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_AKS_MERGED_VALUE_FILE_NAME}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC_AKS}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC_AKS}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "/tmp/${HELM_CHART_RBAC_AKS_MERGED_VALUE_FILE_NAME}" --set global.host="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
+}
+
+initiate_deployments_operator() {
+  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
+  configure_namespace "${NAME_SPACE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE}"
+  deploy_rhdh_operator "${DIR}" "${NAME_SPACE}"
+
+  configure_namespace "${NAME_SPACE_RBAC}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}"
+  deploy_rhdh_operator "${DIR}" "${NAME_SPACE_RBAC}"
 }
 
 check_and_test() {
@@ -409,10 +473,17 @@ main() {
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_AKS}"
     delete_namespace "${NAME_SPACE_RBAC_AKS}"
   else
-    initiate_deployments
+    if [[ "$JOB_NAME" == *operator* ]]; then
+      initiate_deployments_operator
+    else
+      initiate_deployments
+    fi
+    
     check_and_test "${RELEASE_NAME}" "${NAME_SPACE}"
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}"
   fi
+  
+  
   exit "${OVERALL_RESULT}"
 }
 
