@@ -149,7 +149,7 @@ apply_yaml_files() {
   else
     local base_url="https://${release_name}-backstage-${project}.${K8S_CLUSTER_ROUTER_BASE}"
   fi
-  local encoded_base_url="$(echo $base_url | base64)"
+  local encoded_base_url="$(echo -n $base_url | base64 -w 0)"
   echo "Applying YAML files to namespace ${project}"
 
   oc config set-context --current --namespace="${project}"
