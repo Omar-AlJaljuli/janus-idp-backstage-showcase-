@@ -153,6 +153,13 @@ configure_external_postgres_db() {
 apply_yaml_files() {
   local dir=$1
   local project=$2
+  local release_name=$3
+  if [[ "${namespace}" == "showcase-operator-rbac-nightly" || "${namespace}" == "showcase-operator-nightly" ]]; then
+    local base_url="https://backstage-${release_name}-${project}.${K8S_CLUSTER_ROUTER_BASE}"
+  else
+    local base_url="https://${release_name}-backstage-${project}.${K8S_CLUSTER_ROUTER_BASE}"
+  fi
+  local encoded_base_url="$(echo $base_url | base64)"
   echo "Applying YAML files to namespace ${project}"
 
   oc config set-context --current --namespace="${project}"
@@ -192,9 +199,14 @@ apply_yaml_files() {
   oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
   oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
 
+<<<<<<< HEAD
   if [[ "$JOB_NAME" != *aks* ]]; then # Skip for AKS, because of strange `sed: -e expression #1, char 136: unterminated `s' command`
     sed -i "s/K8S_CLUSTER_API_SERVER_URL:.*/K8S_CLUSTER_API_SERVER_URL: ${ENCODED_API_SERVER_URL}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
   fi
+=======
+  sed -i "s/BASE_URL:.*/BASE_URL: ${encoded_base_url}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+  sed -i "s/K8S_CLUSTER_API_SERVER_URL:.*/K8S_CLUSTER_API_SERVER_URL: ${ENCODED_API_SERVER_URL}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+>>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   sed -i "s/K8S_CLUSTER_NAME:.*/K8S_CLUSTER_NAME: ${ENCODED_CLUSTER_NAME}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
 
   set +x
@@ -359,8 +371,13 @@ initiate_deployments() {
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
 
   cd "${DIR}"
+<<<<<<< HEAD
   apply_yaml_files "${DIR}" "${NAME_SPACE}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+=======
+  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${RELEASE_NAME}"
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE : ${NAME_SPACE}"
+>>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
@@ -368,8 +385,13 @@ initiate_deployments() {
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
   
   uninstall_helmchart "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
+<<<<<<< HEAD
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+=======
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE : ${RELEASE_NAME_RBAC}"
+>>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
@@ -420,11 +442,11 @@ initiate_rds_deployment() {
 initiate_deployments_operator() {
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
   configure_namespace "${NAME_SPACE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${RELEASE_NAME}"
   deploy_rhdh_operator "${DIR}" "${NAME_SPACE}"
 
   configure_namespace "${NAME_SPACE_RBAC}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
   deploy_rhdh_operator "${DIR}" "${NAME_SPACE_RBAC}"
 }
 
