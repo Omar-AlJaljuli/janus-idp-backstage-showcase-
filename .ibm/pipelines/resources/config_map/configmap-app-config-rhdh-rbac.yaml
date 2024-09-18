@@ -6,8 +6,12 @@ metadata:
 data:
   app-config-rhdh.yaml: |
     app:
+      baseUrl: ${BASE_URL}
       title: Red Hat Developer Hub
     backend:
+      baseUrl: ${BASE_URL}
+      cors:
+        origin: ${BASE_URL}
       auth:
         keys:
           - secret: temp
