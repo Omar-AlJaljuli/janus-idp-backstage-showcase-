@@ -101,6 +101,7 @@ configure_namespace() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 delete_namespace() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -109,6 +110,8 @@ delete_namespace() {
   fi
 }
 
+=======
+>>>>>>> adb5228d (fix typo and add necessary function)
 configure_namespace_if_nonexistent() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -119,8 +122,11 @@ configure_namespace_if_nonexistent() {
   fi
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 05aada8d (remove redundancies in script and config files for operator)
+=======
+>>>>>>> adb5228d (fix typo and add necessary function)
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
@@ -346,7 +352,9 @@ install_rhdh_operator() {
 
   if oc get csv -n "${namespace}" | grep -q "${CSV_NAME}"; then
     echo "Red Hat Developer Hub operator is already installed."
-  elsedeploy_rhexistent "${namespace}"
+  else
+    echo "Red Hat Developer Hub operator is not installed. Installing..."
+    configure_namespace_if_nonexistent "${namespace}"
     apply_operator_group_if_nonexistent
     oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-subscription.yaml" -n "${namespace}"
   fi
