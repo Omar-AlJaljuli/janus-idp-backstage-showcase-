@@ -100,6 +100,7 @@ configure_namespace() {
   oc config set-context --current --namespace="${project}"
 }
 
+<<<<<<< HEAD
 delete_namespace() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -118,6 +119,8 @@ configure_namespace_if_nonexistent() {
   fi
 }
 
+=======
+>>>>>>> 05aada8d (remove redundancies in script and config files for operator)
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
