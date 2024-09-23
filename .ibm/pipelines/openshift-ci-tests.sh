@@ -469,6 +469,12 @@ main() {
     az_aks_start "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
     az_aks_approuting_enable "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
   fi
+  
+  ############# REMOVE ONCE PR IS READY ############################
+  NAME_SPACE="showcase-operator-nightly"
+  NAME_SPACE_RBAC="showcase-operator-rbac-nightly"
+  JOB_NAME=e2e-tests-operator-nightly
+  ##################################################################
 
   install_oc
   if [[ "$JOB_NAME" == *aks* ]]; then
