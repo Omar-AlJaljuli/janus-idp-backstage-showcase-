@@ -59,7 +59,24 @@ export default defineConfig({
       ],
     },
     {
+<<<<<<< HEAD
       name: "showcase-rbac",
+=======
+      name: 'showcase-operator-nightly',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+      },
+      testIgnore: [
+        '**/playwright/e2e/plugins/rbac/**/*.spec.ts',
+        '**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts',
+        '**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts',
+        '**/playwright/e2e/plugins/bulk-import.spec.ts',
+      ],
+    },
+    {
+      name: 'showcase-rbac',
+>>>>>>> 1d0ce5bb (adding new projects to playwright.config.ts)
       ...useCommonDeviceAndViewportConfig,
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
@@ -69,6 +86,7 @@ export default defineConfig({
       ],
     },
     {
+<<<<<<< HEAD
       name: "showcase-auth-providers",
       use: {
         ...devices["Desktop Chrome"],
@@ -94,6 +112,19 @@ export default defineConfig({
     },
     {
       name: "showcase-aks",
+=======
+      name: 'showcase-op-rbac-nightly',
+      ...useCommonDeviceAndViewportConfig,
+      testMatch: [
+        '**/playwright/e2e/plugins/rbac/**/*.spec.ts',
+        '**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts',
+        '**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts',
+        '**/playwright/e2e/plugins/bulk-import.spec.ts',
+      ],
+    },
+    {
+      name: 'showcase-aks',
+>>>>>>> 1d0ce5bb (adding new projects to playwright.config.ts)
       ...useCommonDeviceAndViewportConfig,
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
