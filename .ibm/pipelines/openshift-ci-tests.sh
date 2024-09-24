@@ -100,8 +100,6 @@ configure_namespace() {
   oc config set-context --current --namespace="${project}"
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 delete_namespace() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -110,8 +108,6 @@ delete_namespace() {
   fi
 }
 
-=======
->>>>>>> adb5228d (fix typo and add necessary function)
 configure_namespace_if_nonexistent() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -122,11 +118,6 @@ configure_namespace_if_nonexistent() {
   fi
 }
 
-<<<<<<< HEAD
-=======
->>>>>>> 05aada8d (remove redundancies in script and config files for operator)
-=======
->>>>>>> adb5228d (fix typo and add necessary function)
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
@@ -153,10 +144,11 @@ apply_yaml_files() {
   local dir=$1
   local project=$2
   local release_name=$3
-  if [[ "${namespace}" == "showcase-operator-rbac-nightly" || "${namespace}" == "showcase-operator-nightly" ]]; then
-    local base_url="https://backstage-${release_name}-${project}.${K8S_CLUSTER_ROUTER_BASE}"
-  else
-    local base_url="https://${release_name}-backstage-${project}.${K8S_CLUSTER_ROUTER_BASE}"
+  local base_url="https://${release_name}-backstage-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
+  if [[ "$JOB_NAME" == *aks* ]]; then
+    local base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  elif [[ "$JOB_NAME" == *operator* ]]; then
+    local base_url="https://backstage-${release_name}-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   fi
   local encoded_base_url="$(echo -n $base_url | base64 -w 0)"
   echo "Applying YAML files to namespace ${project}"
@@ -202,14 +194,10 @@ apply_yaml_files() {
   oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
   oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
 
-<<<<<<< HEAD
   if [[ "$JOB_NAME" != *aks* ]]; then # Skip for AKS, because of strange `sed: -e expression #1, char 136: unterminated `s' command`
     sed -i "s/K8S_CLUSTER_API_SERVER_URL:.*/K8S_CLUSTER_API_SERVER_URL: ${ENCODED_API_SERVER_URL}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
   fi
-=======
   sed -i "s/BASE_URL:.*/BASE_URL: ${encoded_base_url}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-  sed -i "s/K8S_CLUSTER_API_SERVER_URL:.*/K8S_CLUSTER_API_SERVER_URL: ${ENCODED_API_SERVER_URL}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
->>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   sed -i "s/K8S_CLUSTER_NAME:.*/K8S_CLUSTER_NAME: ${ENCODED_CLUSTER_NAME}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
 
   token=$(oc get secret "${secret_name}" -n "${project}" -o=jsonpath='{.data.token}')
@@ -283,7 +271,7 @@ check_backstage_running() {
   local url="https://${release_name}-backstage-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   if [[ "$JOB_NAME" == *aks* ]]; then
     local url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  elif [[ "${namespace}" == "showcase-operator-rbac-nightly" || "${namespace}" == "showcase-operator-nightly" ]]; then
+  elif [[ "$JOB_NAME" == *operator* ]]; then
     local url="https://backstage-${release_name}-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   fi
 
@@ -352,9 +340,7 @@ install_rhdh_operator() {
 
   if oc get csv -n "${namespace}" | grep -q "${CSV_NAME}"; then
     echo "Red Hat Developer Hub operator is already installed."
-  else
-    echo "Red Hat Developer Hub operator is not installed. Installing..."
-    configure_namespace_if_nonexistent "${namespace}"
+  elsedeploy_rhexistent "${namespace}"
     apply_operator_group_if_nonexistent
     oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-subscription.yaml" -n "${namespace}"
   fi
@@ -383,13 +369,8 @@ initiate_deployments() {
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
 
   cd "${DIR}"
-<<<<<<< HEAD
-  apply_yaml_files "${DIR}" "${NAME_SPACE}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-=======
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${RELEASE_NAME}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE : ${NAME_SPACE}"
->>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
@@ -398,13 +379,8 @@ initiate_deployments() {
   
   install_pipelines_operator "${DIR}"
   uninstall_helmchart "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
-<<<<<<< HEAD
-  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-=======
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE : ${RELEASE_NAME_RBAC}"
->>>>>>> 79fe1cf1 (adding base url to configmap to complete Github authorization)
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
@@ -477,12 +453,6 @@ main() {
     az_aks_start "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
     az_aks_approuting_enable "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
   fi
-  
-  ############# REMOVE ONCE PR IS READY ############################
-  NAME_SPACE="showcase-operator-nightly"
-  NAME_SPACE_RBAC="showcase-operator-rbac-nightly"
-  JOB_NAME=e2e-tests-operator-nightly
-  ##################################################################
 
   install_oc
   if [[ "$JOB_NAME" == *aks* ]]; then
