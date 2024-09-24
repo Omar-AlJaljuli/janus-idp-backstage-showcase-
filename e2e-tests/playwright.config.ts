@@ -60,9 +60,13 @@ export default defineConfig({
     },
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       name: "showcase-rbac",
 =======
       name: 'showcase-operator-nightly',
+=======
+      name: 'showcase-operator',
+>>>>>>> d6c1bb79 (adding to the config to allow the operator tests to run)
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
@@ -86,6 +90,7 @@ export default defineConfig({
       ],
     },
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
       name: "showcase-auth-providers",
       use: {
@@ -113,8 +118,17 @@ export default defineConfig({
     {
       name: "showcase-aks",
 =======
+=======
+>>>>>>> d6c1bb79 (adding to the config to allow the operator tests to run)
       name: 'showcase-op-rbac-nightly',
       ...useCommonDeviceAndViewportConfig,
+=======
+      name: 'showcase-operator-rbac',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+      },
+>>>>>>> 11d779b2 (adding to the config to allow the operator tests to run)
       testMatch: [
         '**/playwright/e2e/plugins/rbac/**/*.spec.ts',
         '**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts',
