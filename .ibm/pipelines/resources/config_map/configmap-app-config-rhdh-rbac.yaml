@@ -42,8 +42,8 @@ data:
         # Plugin: GitHub
         github:
           development:
-            clientId: ${GITHUB_APP_CLIENT_ID}
-            clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+            clientId: ${GITHUB_APP_CLIENT_ID_FLEX}
+            clientSecret: ${GITHUB_APP_CLIENT_SECRET_FLEX}
         google:
           development:
             clientId: ${GOOGLE_CLIENT_ID}

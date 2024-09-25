@@ -206,6 +206,13 @@ apply_yaml_files() {
   fi
   sed -i "s/BASE_URL:.*/BASE_URL: ${encoded_base_url}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
   sed -i "s/K8S_CLUSTER_NAME:.*/K8S_CLUSTER_NAME: ${ENCODED_CLUSTER_NAME}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+  if [[ "${project}" == "showcase-op-rbac-nightly" || "${project}" == "showcase-operator-nightly" ]]; then
+    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_3_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_3_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+  else
+    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+  fi
 
   token=$(oc get secret "${secret_name}" -n "${project}" -o=jsonpath='{.data.token}')
   sed -i "s/OCM_CLUSTER_TOKEN: .*/OCM_CLUSTER_TOKEN: ${token}/" "$dir/auth/secrets-rhdh-secrets.yaml"
