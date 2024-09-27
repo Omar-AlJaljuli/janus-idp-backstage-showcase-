@@ -144,18 +144,11 @@ apply_yaml_files() {
   local dir=$1
   local project=$2
   local release_name=$3
-<<<<<<< HEAD
   local base_url="https://${release_name}-backstage-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
   if [[ "$JOB_NAME" == *aks* ]]; then
     local base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   elif [[ "$JOB_NAME" == *operator* ]]; then
     local base_url="https://backstage-${release_name}-${namespace}.${K8S_CLUSTER_ROUTER_BASE}"
-=======
-  if [[ "${project}" == "showcase-op-rbac-nightly" || "${project}" == "showcase-operator-nightly" ]]; then
-    local base_url="https://backstage-${release_name}-${project}.${K8S_CLUSTER_ROUTER_BASE}"
-  else
-    local base_url="https://${release_name}-backstage-${project}.${K8S_CLUSTER_ROUTER_BASE}"
->>>>>>> a7f74635 (fixing callback uri)
   fi
   local encoded_base_url="$(echo -n $base_url | base64 -w 0)"
   echo "Applying YAML files to namespace ${project}"
@@ -206,13 +199,6 @@ apply_yaml_files() {
   fi
   sed -i "s/BASE_URL:.*/BASE_URL: ${encoded_base_url}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
   sed -i "s/K8S_CLUSTER_NAME:.*/K8S_CLUSTER_NAME: ${ENCODED_CLUSTER_NAME}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-  if [[ "${project}" == "showcase-op-rbac-nightly" || "${project}" == "showcase-operator-nightly" ]]; then
-    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_3_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_3_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-  else
-    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-  fi
 
   token=$(oc get secret "${secret_name}" -n "${project}" -o=jsonpath='{.data.token}')
   sed -i "s/OCM_CLUSTER_TOKEN: .*/OCM_CLUSTER_TOKEN: ${token}/" "$dir/auth/secrets-rhdh-secrets.yaml"
@@ -406,7 +392,7 @@ initiate_aks_deployment() {
   install_tekton_pipelines
   uninstall_helmchart "${NAME_SPACE_AKS}" "${RELEASE_NAME}"
   cd "${DIR}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_AKS}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_AKS}" "${RELEASE_NAME}"
   yq_merge_value_files "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_AKS_MERGED_VALUE_FILE_NAME}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_AKS}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_AKS}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "/tmp/${HELM_CHART_AKS_MERGED_VALUE_FILE_NAME}" --set global.host="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
@@ -420,7 +406,7 @@ initiate_rbac_aks_deployment() {
   install_tekton_pipelines
   uninstall_helmchart "${NAME_SPACE_RBAC_AKS}" "${RELEASE_NAME_RBAC}"
   cd "${DIR}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC_AKS}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC_AKS}" "${RELEASE_NAME_RBAC}"
   yq_merge_value_files "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_AKS_MERGED_VALUE_FILE_NAME}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC_AKS}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC_AKS}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "/tmp/${HELM_CHART_RBAC_AKS_MERGED_VALUE_FILE_NAME}" --set global.host="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
