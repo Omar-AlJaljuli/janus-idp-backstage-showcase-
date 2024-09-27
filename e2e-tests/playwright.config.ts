@@ -80,16 +80,11 @@ export default defineConfig({
       ],
     },
     {
-<<<<<<< HEAD
-      name: 'showcase-op-rbac-nightly',
-      ...useCommonDeviceAndViewportConfig,
-=======
       name: 'showcase-operator-rbac',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
       },
->>>>>>> 11d779b2 (adding to the config to allow the operator tests to run)
       testMatch: [
         '**/playwright/e2e/plugins/rbac/**/*.spec.ts',
         '**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts',
