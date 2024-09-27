@@ -340,7 +340,9 @@ install_rhdh_operator() {
 
   if oc get csv -n "${namespace}" | grep -q "${CSV_NAME}"; then
     echo "Red Hat Developer Hub operator is already installed."
-  elsedeploy_rhexistent "${namespace}"
+  else
+    echo "Red Hat Developer Hub operator is not installed. Installing..."
+    configure_namespace_if_nonexistent "${namespace}"
     apply_operator_group_if_nonexistent
     oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-subscription.yaml" -n "${namespace}"
   fi
