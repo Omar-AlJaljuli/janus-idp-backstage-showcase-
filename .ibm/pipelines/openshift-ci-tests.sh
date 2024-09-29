@@ -225,7 +225,7 @@ apply_yaml_files() {
     oc apply -f "$dir/resources/rhdh-operator/dynamic_plugins/configmap-dynamic-plugins.yaml" --namespace="${project}"
   fi
 
-  if [[ "${project}" == "showcase-operator-rbac-nightly" ]]; then
+  if [[ "${project}" == "showcase-op-rbac-nightly" ]]; then
     oc apply -f "$dir/resources/rhdh-operator/dynamic_plugins/configmap-dynamic-plugins-rbac.yaml" --namespace="${project}"
   fi
 }
@@ -358,7 +358,7 @@ deploy_rhdh_operator() {
   local dir=$1
   local namespace=$2
 
-  if [[ "${namespace}" == "showcase-operator-rbac-nightly" ]]; then
+  if [[ "${namespace}" == "showcase-op-rbac-nightly" ]]; then
     oc apply -f "${dir}/resources/rhdh-operator/deployment/rhdh-start-rbac.yaml" -n "${namespace}"
   else 
     oc apply -f "${dir}/resources/rhdh-operator/deployment/rhdh-start.yaml" -n "${namespace}"
@@ -461,6 +461,12 @@ main() {
     az_aks_start "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
     az_aks_approuting_enable "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
   fi
+
+  ############# REMOVE ONCE PR IS READY ############################
+  NAME_SPACE="showcase-operator-nightly"
+  NAME_SPACE_RBAC="showcase-op-rbac-nightly"
+  JOB_NAME=e2e-tests-operator-nightly
+  ##################################################################
 
   install_oc
   if [[ "$JOB_NAME" == *aks* ]]; then
