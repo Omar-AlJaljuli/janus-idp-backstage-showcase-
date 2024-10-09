@@ -345,6 +345,18 @@ initiate_rbac_aks_deployment() {
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC_AKS}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "/tmp/${HELM_CHART_RBAC_AKS_MERGED_VALUE_FILE_NAME}" --set global.host="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
+initiate_rds_deployment() {
+  local release_name=$1
+  local namespace=$2
+  configure_namespace "${namespace}"
+  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: ${RDS_USER}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${RDS_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${RDS_1_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}" 
+  oc apply -f "$DIR/resources/postgres-db/postgress-cred.yaml" -n "${namespace}"
+  helm upgrade -i "${release_name}" -n "${namespace}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "$DIR/resources/postgres-db/postgress-rds.yaml" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
+}
+
 check_and_test() {
   local release_name=$1
   local namespace=$2
@@ -396,6 +408,7 @@ main() {
   ENCODED_API_SERVER_URL=$(echo "${API_SERVER_URL}" | base64)
   ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
 
+
   if [[ "$JOB_NAME" == *aks* ]]; then
     initiate_aks_deployment
     check_and_test "${RELEASE_NAME}" "${NAME_SPACE_AKS}"
@@ -404,9 +417,14 @@ main() {
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_AKS}"
     delete_namespace "${NAME_SPACE_RBAC_AKS}"
   else
-    initiate_deployments
+    initiate_rds_deployment
     check_and_test "${RELEASE_NAME}" "${NAME_SPACE}"
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}"
+  fi
+
+  if [[ "$JOB_NAME" == *periodic* ]]; then
+    initiate_rds_deployment "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
+    check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
   fi
   exit "${OVERALL_RESULT}"
 }
