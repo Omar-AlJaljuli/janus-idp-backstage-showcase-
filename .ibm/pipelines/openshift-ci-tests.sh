@@ -424,7 +424,7 @@ main() {
 
   if [[ "$JOB_NAME" == *periodic* ]]; then
     initiate_rds_deployment "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
-    check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
+    check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
   fi
   exit "${OVERALL_RESULT}"
 }
