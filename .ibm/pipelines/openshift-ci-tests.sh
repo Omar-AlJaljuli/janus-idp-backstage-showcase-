@@ -349,6 +349,7 @@ initiate_rds_deployment() {
   local release_name=$1
   local namespace=$2
   configure_namespace "${namespace}"
+  uninstall_helmchart "${namespace}" "${release_name}"
   sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: ${RDS_USER}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${RDS_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${RDS_1_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
@@ -422,9 +423,14 @@ main() {
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}"
   fi
 
+  #################### REMOVE WHEN PR READY #############################
+  JOB_NAME='periodic-test'
+  #################### REMOVE WHEN PR READY #############################
+  
+  # Only test TLS config with RDS in nightly jobs
   if [[ "$JOB_NAME" == *periodic* ]]; then
     initiate_rds_deployment "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
-    check_backstage_running "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
+    check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
   fi
   exit "${OVERALL_RESULT}"
 }

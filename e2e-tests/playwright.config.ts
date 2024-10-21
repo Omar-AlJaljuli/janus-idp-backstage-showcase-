@@ -119,9 +119,7 @@ export default defineConfig({
     {
       name: 'postgres-health-check',
       ...useCommonDeviceAndViewportConfig,
-      testMatch: [
-        '**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts',
-      ],
+      testMatch: ['**/playwright/e2e/verify-tls-config-health-check.spec.ts'],
     },
 
     // {
