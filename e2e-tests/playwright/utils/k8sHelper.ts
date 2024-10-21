@@ -1,12 +1,10 @@
 import k8s, { V1ConfigMap } from '@kubernetes/client-node';
 import { logger } from './Logger';
-import * as yaml from 'js-yaml';
 export class kubeCLient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
   kc: k8s.KubeConfig;
 
-  core;
   constructor() {
     logger.info(`Initializing Kubernetes API client`);
     try {
@@ -32,37 +30,6 @@ export class kubeCLient {
     } catch (e) {
       logger.error(e.body.message);
       throw e;
-    }
-  }
-
-  async updateConfigMapTitle(
-    configMapName: string,
-    namespace: string,
-    newTitle: string,
-  ) {
-    try {
-      const configMapResponse = await this.coreV1Api.readNamespacedConfigMap(
-        configMapName,
-        namespace,
-      );
-      const configMap = configMapResponse.body;
-
-      const appConfigYaml = configMap.data[`app-config.yaml`];
-      const appConfigObj = yaml.load(appConfigYaml) as any;
-      console.log(appConfigObj);
-      appConfigObj.app.title = newTitle;
-      configMap.data[`app-config.yaml`] = yaml.dump(appConfigObj);
-
-      delete configMap.metadata.creationTimestamp;
-
-      await this.coreV1Api.replaceNamespacedConfigMap(
-        configMapName,
-        namespace,
-        configMap,
-      );
-      console.log('ConfigMap updated successfully.');
-    } catch (error) {
-      console.error('Error updating ConfigMap:', error);
     }
   }
 
