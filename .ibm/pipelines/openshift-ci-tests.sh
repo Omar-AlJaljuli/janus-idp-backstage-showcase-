@@ -350,9 +350,9 @@ initiate_rds_deployment() {
   local namespace=$2
   configure_namespace "${namespace}"
   uninstall_helmchart "${namespace}" "${release_name}"
-  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: ${RDS_USER}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${RDS_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${RDS_1_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $(echo -n $RDS_USER | base64)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}" 
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   helm upgrade -i "${release_name}" -n "${namespace}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
