@@ -2,8 +2,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: rhdh-dynamic-plugins-root
-  labels:
-    app.kubernetes.io/managed-by: Helm
 spec:
   accessModes:
     - ReadWriteOnce
