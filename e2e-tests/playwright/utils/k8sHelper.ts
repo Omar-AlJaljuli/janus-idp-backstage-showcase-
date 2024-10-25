@@ -1,5 +1,5 @@
-import k8s, { V1ConfigMap } from '@kubernetes/client-node';
-import { logger } from './Logger';
+import k8s, { V1ConfigMap } from "@kubernetes/client-node";
+import { logger } from "./Logger";
 
 export class kubeCLient {
   coreV1Api: k8s.CoreV1Api;
@@ -51,12 +51,12 @@ export class kubeCLient {
         undefined,
         undefined,
         {
-          headers: { 'Content-Type': 'application/strategic-merge-patch+json' },
+          headers: { "Content-Type": "application/strategic-merge-patch+json" },
         },
       );
       console.log(`Deployment scaled to ${replicas} replicas.`);
     } catch (error) {
-      console.error('Error scaling deployment:', error);
+      console.error("Error scaling deployment:", error);
     }
   }
 
@@ -235,7 +235,7 @@ export class kubeCLient {
         console.log(
           `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas}.`,
         );
-        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
       } catch (error) {
         console.error(`Error checking deployment status: ${error}`);
         throw error;
