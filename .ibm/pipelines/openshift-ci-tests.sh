@@ -423,10 +423,6 @@ main() {
     check_and_test "${RELEASE_NAME}" "${NAME_SPACE}"
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}"
   fi
-
-  #################### REMOVE WHEN PR READY #############################
-  JOB_NAME='periodic-test'
-  #################### REMOVE WHEN PR READY #############################
   
   # Only test TLS config with RDS in nightly jobs
   if [[ "$JOB_NAME" == *periodic* ]]; then
