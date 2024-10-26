@@ -339,16 +339,14 @@ apply_operator_group_if_nonexistent() {
 install_rhdh_operator() {
   local dir=$1
   local namespace=$2
-  CSV_NAME="Red Hat Developer Hub Operator"
 
-  if oc get csv -n "${namespace}" | grep -q "${CSV_NAME}"; then
-    echo "Red Hat Developer Hub operator is already installed."
-  else
-    echo "Red Hat Developer Hub operator is not installed. Installing..."
-    configure_namespace_if_nonexistent "${namespace}"
-    apply_operator_group_if_nonexistent
-    oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-subscription.yaml" -n "${namespace}"
-  fi
+  configure_namespace $namespace
+  
+  # Make sure script is up to date
+  rm -f install-rhdh-catalog-source.sh
+  curl -L https://raw.githubusercontent.com/rm3l/redhat-developer-hub-operator/refs/heads/support_clusters_with_hosted_control_plane_in_rhdh_ci_install_script/.rhdh/scripts/install-rhdh-catalog-source.sh > /tmp/install-rhdh-catalog-source.sh
+  chmod +x /tmp/install-rhdh-catalog-source.sh
+  /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh
 }
 
 deploy_rhdh_operator() {
@@ -543,7 +541,6 @@ main() {
     else
       initiate_deployments
     fi
-    
     check_and_test "${RELEASE_NAME}" "${NAME_SPACE}"
     check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}"
     # Only test TLS config with RDS in nightly jobs
