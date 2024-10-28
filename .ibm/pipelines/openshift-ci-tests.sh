@@ -83,6 +83,15 @@ install_helm() {
   fi
 }
 
+install_skopeo() {
+  if command -v skopeo >/dev/null 2>&1; then
+    echo "skopeo is already installed"
+  else
+    dnf -y install skopeo
+    echo "skopeo is installed successfully"
+  fi
+}
+
 uninstall_helmchart() {
   local project=$1
   local release=$2
@@ -343,8 +352,9 @@ install_rhdh_operator() {
   configure_namespace $namespace
   
   # Make sure script is up to date
+  install_skopeo
   rm -f /tmp/install-rhdh-catalog-source.sh
-  curl -L https://raw.githubusercontent.com/rm3l/redhat-developer-hub-operator/refs/heads/support_clusters_with_hosted_control_plane_in_rhdh_ci_install_script/.rhdh/scripts/install-rhdh-catalog-source.sh > /tmp/install-rhdh-catalog-source.sh
+  curl -L https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/main/.rhdh/scripts/install-rhdh-catalog-source.sh > /tmp/install-rhdh-catalog-source.sh
   chmod +x /tmp/install-rhdh-catalog-source.sh
   /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh
 }
