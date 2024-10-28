@@ -83,15 +83,6 @@ install_helm() {
   fi
 }
 
-install_skopeo() {
-  if command -v skopeo >/dev/null 2>&1; then
-    echo "skopeo is already installed"
-  else
-    dnf -y install skopeo
-    echo "skopeo is installed successfully"
-  fi
-}
-
 uninstall_helmchart() {
   local project=$1
   local release=$2
@@ -127,6 +118,7 @@ delete_namespace() {
   fi
 }
 
+###### REMOVE IF CI BUILD PASSES ########
 configure_namespace_if_nonexistent() {
   local project=$1
   if oc get namespace "${project}" >/dev/null 2>&1; then
@@ -336,6 +328,7 @@ install_tekton_pipelines() {
   fi
 }
 
+###### REMOVE IF CI BUILD PASSES ########
 apply_operator_group_if_nonexistent() {
   if [[ $(oc get OperatorGroup -n rhdh-operator  2>/dev/null | wc -l) -ge 1 ]]; then 
     echo "Red Hat Developer Hub operator group is already installed."
@@ -352,7 +345,6 @@ install_rhdh_operator() {
   configure_namespace $namespace
   
   # Make sure script is up to date
-  install_skopeo
   rm -f /tmp/install-rhdh-catalog-source.sh
   curl -L https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/main/.rhdh/scripts/install-rhdh-catalog-source.sh > /tmp/install-rhdh-catalog-source.sh
   chmod +x /tmp/install-rhdh-catalog-source.sh
@@ -498,7 +490,7 @@ main() {
   echo "Log file: ${LOGFILE}"
   set_cluster_info
   source "${DIR}/env_variables.sh"
-  if [[ "$JOB_NAME" == *periodic-* ]]; then
+  if [[ "$JOB_NAME" == *periodic-* && "$JOB_NAME" != *operator* ]]; then
     NAME_SPACE="showcase-ci-nightly"
     NAME_SPACE_RBAC="showcase-rbac-nightly"
     NAME_SPACE_POSTGRES_DB="postgress-external-db-nightly"

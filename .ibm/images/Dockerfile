@@ -100,4 +100,8 @@ RUN go install github.com/kadel/pr-commenter@latest && \
     ibmcloud plugin install -f cloud-object-storage && \
     ibmcloud plugin install -f kubernetes-service
 
+# Install skopeo
+RUN apt-get update -y && \
+    apt-get install -y skopeo
+
 WORKDIR /tmp/
