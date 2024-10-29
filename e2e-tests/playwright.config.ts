@@ -59,7 +59,7 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-operator-nightly",
+      name: "showcase-operator",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1920, height: 1080 },
@@ -82,7 +82,7 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-op-rbac-nightly",
+      name: "showcase-operator-rbac",
       ...useCommonDeviceAndViewportConfig,
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
