@@ -118,17 +118,6 @@ delete_namespace() {
   fi
 }
 
-###### REMOVE IF CI BUILD PASSES ########
-configure_namespace_if_nonexistent() {
-  local project=$1
-  if oc get namespace "${project}" >/dev/null 2>&1; then
-    echo "Namespace ${project} already exists!"
-  else
-    oc create namespace "${project}"
-    oc config set-context --current --namespace="${project}"
-  fi
-}
-
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
@@ -325,16 +314,6 @@ install_tekton_pipelines() {
   else
     echo "Tekton Pipelines is not installed. Installing..."
     oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-  fi
-}
-
-###### REMOVE IF CI BUILD PASSES ########
-apply_operator_group_if_nonexistent() {
-  if [[ $(oc get OperatorGroup -n rhdh-operator  2>/dev/null | wc -l) -ge 1 ]]; then 
-    echo "Red Hat Developer Hub operator group is already installed."
-  else
-    echo "Red Hat Developer Hub operator group does not exist. adding..."
-    oc apply -f "${dir}/resources/rhdh-operator/installation/rhdh-operator-group.yaml" -n "${namespace}"
   fi
 }
 
