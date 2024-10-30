@@ -146,9 +146,9 @@ apply_yaml_files() {
   local release_name=$3
   local base_url="https://${release_name}-backstage-${project}.${K8S_CLUSTER_ROUTER_BASE}"
   if [[ "$JOB_NAME" == *aks* ]]; then
-    local base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+    base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   elif [[ "$JOB_NAME" == *operator* ]]; then
-    local base_url="https://backstage-${release_name}-${project}.${K8S_CLUSTER_ROUTER_BASE}"
+    base_url="https://backstage-${release_name}-${project}.${K8S_CLUSTER_ROUTER_BASE}"
   fi
   local encoded_base_url="$(echo -n $base_url | base64 -w 0)"
   echo "Applying YAML files to namespace ${project}"
@@ -172,17 +172,17 @@ apply_yaml_files() {
     GITHUB_APP_CLIENT_ID=$GITHUB_APP_2_CLIENT_ID
     GITHUB_APP_PRIVATE_KEY=$GITHUB_APP_2_PRIVATE_KEY
     GITHUB_APP_CLIENT_SECRET=$GITHUB_APP_2_CLIENT_SECRET
+  elif [[ "$JOB_NAME" == *operator* ]]; then
+    GITHUB_APP_APP_ID=$GITHUB_APP_3_APP_ID
+    GITHUB_APP_CLIENT_ID=$GITHUB_APP_3_CLIENT_ID
+    GITHUB_APP_PRIVATE_KEY=$GITHUB_APP_3_PRIVATE_KEY
+    GITHUB_APP_CLIENT_SECRET=$GITHUB_APP_3_CLIENT_SECRET
   fi
 
   for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN; do
     sed -i "s|${key}:.*|${key}: ${!key}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
   done
-  if [[ "$JOB_NAME" == *operator* ]]; then
-    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_3_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_3_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-  else
-    sed -i "s/GITHUB_APP_CLIENT_ID_FLEX:.*/GITHUB_APP_CLIENT_ID_FLEX: ${GITHUB_APP_CLIENT_ID}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-    sed -i "s/GITHUB_APP_CLIENT_SECRET_FLEX:.*/GITHUB_APP_CLIENT_SECRET_FLEX: ${GITHUB_APP_CLIENT_SECRET}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
+
   fi
   oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
   oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
