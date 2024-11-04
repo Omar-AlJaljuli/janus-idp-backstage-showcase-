@@ -18,7 +18,7 @@
     "showcase-rbac-aks-ci-nightly": "playwright test --project=showcase-rbac-aks",
     "showcase-rds-nightly": "playwright test --project=postgres-health-check",
     "showcase-operator-nightly": "playwright test --project=showcase-operator",
-    "showcase-operator-rbac-nightly": "playwright test --project=showcase-operator-rbac",
+    "showcase-op-rbac-nightly": "playwright test --project=showcase-operator-rbac",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "postinstall": "playwright install",
