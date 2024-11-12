@@ -38,6 +38,7 @@ data:
     auth:
       # see https://backstage.io/docs/auth/ to learn about auth providers
       environment: development
+      dangerouslyAllowSignInWithoutUserInCatalog: true
       providers:
         # Plugin: GitHub
         github:
