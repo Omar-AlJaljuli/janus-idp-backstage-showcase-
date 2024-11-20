@@ -15,7 +15,7 @@ export class Common {
   }
 
   async loginAsGuest() {
-    await this.page.goto('/');
+    await this.page.goto(`${process.env.BASE_URL}/`);
     await this.waitForLoad(240000);
     // TODO - Remove it after https://issues.redhat.com/browse/RHIDP-2043. A Dynamic plugin for Guest Authentication Provider needs to be created
     this.page.on('dialog', async dialog => {
