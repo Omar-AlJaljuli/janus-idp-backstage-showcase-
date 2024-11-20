@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Application health check', async ({ request }) => {
-  const healthCheckEndpoint = '/healthcheck';
+  const healthCheckEndpoint = `${process.env.BASE_URL}/healthcheck`;
 
   const response = await request.get(healthCheckEndpoint);
 
