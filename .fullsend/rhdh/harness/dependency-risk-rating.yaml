@@ -1,0 +1,94 @@
+# Standalone custom agent: dependency-update risk rating on /fs-risk-rating.
+# Reuses the code sandbox (image, yarn, node→GitHub/npm) and the review mint
+# role so the post-script can comment. Does not inherit review/code pre/post
+# scripts or skills (those assume a different job).
+#
+# Skill: Omar-AlJaljuli/rhdh-skills dependency-risk-rating at
+# 6d7d9fbafd322c0c6eb2708d3570fdb6361a19cf (ComputeTreeHash of
+# skills/security/dependency-risk-rating).
+agent: rhdh/agents/dependency-risk-rating.md
+model: claude-opus-4-6
+image: ghcr.io/fullsend-ai/fullsend-code:latest
+policy: rhdh/policies/dependency-risk-rating.yaml
+
+# providers: vertex-ai.yaml removed — the fullsend-vertex-ai provider type is
+# unsupported in per-repo mode. Vertex AI env vars are passed via env.sandbox
+# (ADR 0055), same fix as rhdh-plugin-export-overlays#3527.
+
+role: review
+slug: rhdh-dependency-risk-rating
+
+# issue_comment on a PR is entity.kind=work_item with linked_change_proposal
+# from the webhook. state.change_proposal is filled only if GetPullRequestInfo
+# succeeds; requiring it made /fs-risk-rating a silent no-op. Skip only
+# when the API did populate a real fork (empty head/base repos are fail-closed
+# is_fork=true in fullsend — do not treat that as a fork).
+trigger: >
+  event.transition.kind == "comment_added"
+    && has(event.transition.comment.command)
+    && event.transition.comment.command == "/fs-risk-rating"
+    && event.entity.kind == "work_item"
+    && has(event.entity.linked_change_proposal)
+    && event.actor.kind != "bot"
+    && (!has(event.state.change_proposal)
+        || event.state.change_proposal.head_repo == ""
+        || event.state.change_proposal.head_repo == event.state.change_proposal.base_repo)
+
+skills:
+  - https://github.com/Omar-AlJaljuli/rhdh-skills/tree/6d7d9fbafd322c0c6eb2708d3570fdb6361a19cf/skills/security/dependency-risk-rating#sha256=1480fb4311cc26b254ec9bea25c2c13a52f0576213dfdc056ea8420c7114df54
+
+# Harness-level allowlist required for URL skills (not inherited from
+# config.yaml). Must also be covered by config.yaml allowed_remote_resources.
+allowed_remote_resources:
+  - https://github.com/Omar-AlJaljuli/rhdh-skills/
+
+host_files:
+  # common/env/gcp-vertex.env removed — Vertex env vars passed via env.sandbox
+  # (ADR 0055). The reusable workflow sets them on the runner; OpenShell does
+  # not inherit them, so they must be forwarded explicitly.
+  - src: ${GOOGLE_APPLICATION_CREDENTIALS}
+    dest: /tmp/.gcp-credentials.json
+  - src: ${GCP_OIDC_TOKEN_FILE}
+    dest: /sandbox/workspace/.gcp-oidc-token
+    optional: true
+  - src: rhdh/bin/yarn
+    dest: /sandbox/workspace/bin/yarn
+  - src: rhdh/env/yarn-proxy.env
+    dest: /sandbox/workspace/.env.d/yarn-proxy.env
+  - src: rhdh/env/node-proxy.env
+    dest: /sandbox/workspace/.env.d/node-proxy.env
+  - src: /tmp/workspace/pr-context.json
+    dest: /sandbox/workspace/pr-context.json
+    optional: true
+  - src: /tmp/workspace/pr-data.tar
+    dest: /sandbox/workspace/pr-data.tar
+    optional: true
+
+pre_script: rhdh/scripts/pre-dependency-risk-rating.sh
+post_script: rhdh/scripts/post-dependency-risk-rating.sh
+
+timeout_minutes: 20
+
+overlays:
+  - when: 'runtime.forge == "github"'
+    env:
+      runner:
+        GH_TOKEN: "${GH_TOKEN}"
+        REVIEW_TOKEN: "${REVIEW_TOKEN}"
+        REPO_FULL_NAME: "${REPO_FULL_NAME}"
+        ISSUE_NUMBER: "${ISSUE_NUMBER}"
+        ISSUE_URL: "${GITHUB_ISSUE_URL}"
+        GITHUB_ISSUE_URL: "${GITHUB_ISSUE_URL}"
+        FULLSEND_OUTPUT_FILE: agent-result.json
+      sandbox:
+        ISSUE_URL: "${GITHUB_ISSUE_URL}"
+        REPO_FULL_NAME: "${REPO_FULL_NAME}"
+        NODE_USE_ENV_PROXY: "1"
+        FULLSEND_OUTPUT_FILE: agent-result.json
+        # Vertex AI env vars (ADR 0055) — forwarded from runner env set by
+        # setup-gcp + setup-agent-env in the reusable workflow.
+        CLAUDE_CODE_USE_VERTEX: "1"
+        ANTHROPIC_VERTEX_PROJECT_ID: "${ANTHROPIC_VERTEX_PROJECT_ID}"
+        CLOUD_ML_REGION: "${CLOUD_ML_REGION}"
+        GOOGLE_APPLICATION_CREDENTIALS: /tmp/.gcp-credentials.json
+        GOOGLE_CLOUD_PROJECT: "${GOOGLE_CLOUD_PROJECT}"

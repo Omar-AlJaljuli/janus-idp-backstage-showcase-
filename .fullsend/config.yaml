@@ -19,9 +19,15 @@ allowed_remote_resources:
     - https://raw.githubusercontent.com/fullsend-ai/fullsend/
     - https://raw.githubusercontent.com/fullsend-ai/agents/
     - https://github.com/redhat-developer/rhdh-skills/
+    - https://github.com/Omar-AlJaljuli/rhdh-skills/
 agents:
     - name: code
       source: harness/code.yaml
+    # /fs-risk-rating. Custom agent files live under rhdh/ so the reusable
+    # workflow's overlay of upstream harness/agents/policies does not replace them.
+    - name: dependency-risk-rating
+      source: rhdh/harness/dependency-risk-rating.yaml
+      model: claude-opus-4-6
 create_issues:
     allow_targets:
         repos:

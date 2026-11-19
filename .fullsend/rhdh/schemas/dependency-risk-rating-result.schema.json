@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dependency-risk-rating-result.schema.json",
+  "title": "Dependency Risk Rating Result",
+  "description": "Structured output from dependency-risk-rating. Validated before the post-script comments on the PR.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "comment"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["complete", "needs_input", "error"]
+    },
+    "package": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "from_version": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "to_version": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "ecosystem": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "reasoning": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    },
+    "comment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60000
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "complete" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": [
+          "package",
+          "from_version",
+          "to_version",
+          "ecosystem",
+          "risk",
+          "score",
+          "reasoning",
+          "comment"
+        ]
+      }
+    }
+  ]
+}
