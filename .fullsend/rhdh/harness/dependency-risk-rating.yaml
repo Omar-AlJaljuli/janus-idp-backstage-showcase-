@@ -4,7 +4,7 @@
 # scripts or skills (those assume a different job).
 #
 # Skill: Omar-AlJaljuli/rhdh-skills dependency-risk-rating at
-# 6d7d9fbafd322c0c6eb2708d3570fdb6361a19cf (ComputeTreeHash of
+# 5d776d0fe4d3d9011d06d35dc0d3a12f5743fed5 (ComputeTreeHash of
 # skills/security/dependency-risk-rating).
 agent: rhdh/agents/dependency-risk-rating.md
 model: claude-opus-4-6
@@ -35,7 +35,7 @@ trigger: >
         || event.state.change_proposal.head_repo == event.state.change_proposal.base_repo)
 
 skills:
-  - https://github.com/Omar-AlJaljuli/rhdh-skills/tree/6d7d9fbafd322c0c6eb2708d3570fdb6361a19cf/skills/security/dependency-risk-rating#sha256=1480fb4311cc26b254ec9bea25c2c13a52f0576213dfdc056ea8420c7114df54
+  - https://github.com/Omar-AlJaljuli/rhdh-skills/tree/5d776d0fe4d3d9011d06d35dc0d3a12f5743fed5/skills/security/dependency-risk-rating#sha256=7a889bf612ee87ca5ac0231d81451850a42582a23179a422f67c77375f60e44c
 
 # Harness-level allowlist required for URL skills (not inherited from
 # config.yaml). Must also be covered by config.yaml allowed_remote_resources.
