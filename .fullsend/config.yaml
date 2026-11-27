@@ -8,16 +8,26 @@
 # (default when unset) or pi. For one run, the 'fullsend run --runtime'
 # flag wins, then FULLSEND_RUNTIME, then this file. See docs/runtimes.md.
 version: "1"
-# This installation only dispatches the code agent for upgrade issues.
+# This installation dispatches the code agent for upgrade issues (coder) and
+# the dependency-risk-rating agent on /fs-risk-rating (review). No other
+# fullsend role is enabled.
 roles:
     - coder
+    - review
 allowed_remote_resources:
     - https://raw.githubusercontent.com/fullsend-ai/fullsend/
     - https://raw.githubusercontent.com/fullsend-ai/agents/
     - https://github.com/redhat-developer/rhdh-skills/
+    - https://github.com/Omar-AlJaljuli/rhdh-skills/
 agents:
     - name: code
       source: harness/code.yaml
+    # /fs-risk-rating. Custom agent files live under rhdh/ so the reusable
+    # workflow's overlay of upstream harness/agents/policies does not replace
+    # them.
+    - name: dependency-risk-rating
+      source: rhdh/harness/dependency-risk-rating.yaml
+      model: claude-sonnet-5-5
 mint_url: https://mint.fullsend.sh
 # Inference project and WIF provider are passed from repository secrets by
 # .github/workflows/fullsend.yaml; GitHub expressions are not expanded here.

@@ -1,4 +1,5 @@
-# Based on fullsend scaffold; only manual /fs-code on an open Backstage upgrade issue.
+# Based on fullsend scaffold; only manual /fs-code on an open Backstage upgrade
+# issue, and manual /fs-risk-rating on an open pull request.
 # Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
 ---
 # fullsend shim workflow (per-repo installation mode)
@@ -22,13 +23,19 @@ permissions: {}
 
 jobs:
   dispatch:
+    # Two commands are allowed, each on exactly one kind of target:
+    #   /fs-code        — open issue labelled backstage-upgrade-automation
+    #   /fs-risk-rating — open pull request (fork PRs are skipped again by the
+    #                     dependency-risk-rating harness trigger)
     if: >-
       github.event_name == 'issue_comment'
-      && github.event.issue.pull_request == null
       && github.event.issue.state == 'open'
-      && contains(github.event.issue.labels.*.name, 'backstage-upgrade-automation')
-      && github.event.comment.body == '/fs-code'
       && github.event.comment.user.type != 'Bot'
+      && ((github.event.issue.pull_request == null
+      && contains(github.event.issue.labels.*.name, 'backstage-upgrade-automation')
+      && github.event.comment.body == '/fs-code')
+      || (github.event.issue.pull_request != null
+      && github.event.comment.body == '/fs-risk-rating'))
     permissions:
       actions: write
       id-token: write
