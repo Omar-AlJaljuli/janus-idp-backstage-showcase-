@@ -36,7 +36,7 @@ network_policies:
       - path: "**/claude.exe"
       - path: "**/node"
 
-  # api.github.com: Omar skill check-backstage fallback (Contents API mirror
+  # api.github.com: skill's check-backstage fallback (Contents API mirror
   # of backstage/versions). Agent does not run Mode C / raw.githubusercontent.com.
   github_api:
     name: github-api

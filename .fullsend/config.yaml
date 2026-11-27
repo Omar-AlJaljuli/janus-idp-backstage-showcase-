@@ -18,7 +18,6 @@ allowed_remote_resources:
     - https://raw.githubusercontent.com/fullsend-ai/fullsend/
     - https://raw.githubusercontent.com/fullsend-ai/agents/
     - https://github.com/redhat-developer/rhdh-skills/
-    - https://github.com/Omar-AlJaljuli/rhdh-skills/
 agents:
     - name: code
       source: harness/code.yaml

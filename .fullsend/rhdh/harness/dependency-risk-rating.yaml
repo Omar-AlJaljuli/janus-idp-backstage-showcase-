@@ -3,8 +3,8 @@
 # role so the post-script can comment. Does not inherit review/code pre/post
 # scripts or skills (those assume a different job).
 #
-# Skill: Omar-AlJaljuli/rhdh-skills dependency-risk-rating at
-# 5d776d0fe4d3d9011d06d35dc0d3a12f5743fed5 (ComputeTreeHash of
+# Skill: redhat-developer/rhdh-skills dependency-risk-rating at
+# 57551aebd490d24d8bb70ac49df71313ec87a621 (ComputeTreeHash of
 # skills/security/dependency-risk-rating).
 agent: rhdh/agents/dependency-risk-rating.md
 model: claude-sonnet-5-5
@@ -37,12 +37,12 @@ trigger: >
         || event.state.change_proposal.head_repo == event.state.change_proposal.base_repo)
 
 skills:
-  - https://github.com/Omar-AlJaljuli/rhdh-skills/tree/5d776d0fe4d3d9011d06d35dc0d3a12f5743fed5/skills/security/dependency-risk-rating#sha256=7a889bf612ee87ca5ac0231d81451850a42582a23179a422f67c77375f60e44c
+  - https://github.com/redhat-developer/rhdh-skills/tree/57551aebd490d24d8bb70ac49df71313ec87a621/skills/security/dependency-risk-rating#sha256=be0c2e0e86e07f68348bebb1eb3c4a109c8253aa2955703b22986781e86fef09
 
 # Harness-level allowlist required for URL skills (not inherited from
 # config.yaml). Must also be covered by config.yaml allowed_remote_resources.
 allowed_remote_resources:
-  - https://github.com/Omar-AlJaljuli/rhdh-skills/
+  - https://github.com/redhat-developer/rhdh-skills/
 
 host_files:
   # common/env/gcp-vertex.env removed — Vertex env vars passed via env.sandbox
